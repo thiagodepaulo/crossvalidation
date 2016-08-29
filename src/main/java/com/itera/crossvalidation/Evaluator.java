@@ -5,20 +5,20 @@
  */
 package com.itera.crossvalidation;
 
-
 import Structures.Data;
 
 /**
  *
  * @author root
  */
-public class Loader {
+public class Evaluator {
     
-    public static Data loadTrainFromCassandra() {
-        return null;
+    public double[][] confusionMatrix;
+    
+    public void evaluateClassifier(Learning model, Data testData) {
+        int nClass = testData.getNumClasses();
+        confusionMatrix = new double[nClass][nClass];
+        
     }
     
-    public static Data loadTestFromCassandra() {
-        return null;
-    }
 }

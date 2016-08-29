@@ -5,25 +5,30 @@
  */
 package com.itera.crossvalidation;
 
+import Structures.Data;
+
 /**
  *
  * @author root
  */
-public class Validator {
+public class Main {
     
     public static void main(String[] args) {
         
+        Evaluator eval = new Evaluator();
         for(int i=0; i<IteraParams.RUNS; i++) {
-           Data train = Loader.loadFromCassandra();
-           Data test = Loader.loadTrainFromCassandra();
+           Data train = Loader.loadTrainFromCassandra();
+           Data test = Loader.loadTestFromCassandra();
            
-           Learning model = buildClassifier();
-           double[] confidence = model.classify(test);           
+           Learning cls = new Learning();
+           cls.buildClassifier(train);
+           
+           eval.evaluateClassifier(cls, test);
         }    
         
     }
     
-    public static Learning buildClassifier() {
+    public static Learning buildClassifier(Data train) {
         return null;
     }
     

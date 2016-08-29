@@ -21,4 +21,6 @@ public class Loader {
     public static Data loadTestFromCassandra() {
         return null;
     }
+    
+    
 }

@@ -18,10 +18,19 @@ public class Evaluator {
     public double[][] confusionMatrix;
     public int nClass;
     public int nDocs;
+    public int correct;
+    public int incorrect;
+    public int withClass;
+    public String[] classNames;
 
     public void evaluateClassifier(Learning model, Data testData) {
         this.nClass = testData.getNumClasses();
         this.nDocs = testData.getNumDocs();
+
+        classNames = new String[nClass];
+        for (int i = 0; i < nClass; i++) {
+            classNames[i] = testData.getClasses().get(i);
+        }
 
         ArrayList<IndexValue> adjList;
         confusionMatrix = new double[nClass][nClass];
@@ -30,7 +39,58 @@ public class Evaluator {
             int realClassDoc = testData.getClassDocument(docId);
             int predClassDoc = model.classify(adjList);
             confusionMatrix[realClassDoc][predClassDoc] += 1;
+
+            if (realClassDoc != predClassDoc) {
+                incorrect++;
+            } else {
+                correct++;
+            }
+            withClass += 1;
         }
+    }
+
+    /**
+     * Gets the number of instances correctly classified (that is, for which a
+     * correct prediction was made). (Actually the sum of the weights of these
+     * instances)
+     *
+     * @return the number of correctly classified instances
+     */
+    public final double correct() {
+
+        return correct;
+    }
+
+    /**
+     * Gets the percentage of instances correctly classified (that is, for which
+     * a correct prediction was made).
+     *
+     * @return the percent of correctly classified instances (between 0 and 100)
+     */
+    public final double pctCorrect() {
+        return 100 * correct / withClass;
+    }
+
+    /**
+     * Gets the number of instances incorrectly classified (that is, for which
+     * an incorrect prediction was made). (Actually the sum of the weights of
+     * these instances)
+     *
+     * @return the number of incorrectly classified instances
+     */
+    public final double incorrect() {
+        return incorrect;
+    }
+
+    /**
+     * Gets the percentage of instances incorrectly classified (that is, for
+     * which an incorrect prediction was made).
+     *
+     * @return the percent of incorrectly classified instances (between 0 and
+     * 100)
+     */
+    public final double pctIncorrect() {
+        return 100 * incorrect / withClass;
     }
 
     public double truePositiveRate(int classIndex) {
@@ -387,114 +447,109 @@ public class Evaluator {
      * returned as well
      * @return the summary as a String
      */
-    public String toSummaryString(String title,
-            boolean printComplexityStatistics) {
+    public String toSummaryString() {
 
         StringBuffer text = new StringBuffer();
 
-        if (printComplexityStatistics && m_NoPriors) {
-            printComplexityStatistics = false;
-            System.err.println("Priors disabled, cannot print complexity statistics!");
-        }
+        text.append("Summary" + "\n");
+        text.append("Correctly Classified Instances     ");
+        text.append(correct() + "     " + pctCorrect() + " %\n");
+        text.append("Incorrectly Classified Instances   ");
+        text.append(incorrect() + "     " + pctIncorrect() + " %\n");
+        text.append("Kappa statistic                    ");
+        text.append(kappa() + "\n");
 
-        text.append(title + "\n");
-        try {
-            if (m_WithClass > 0) {
-                if (m_ClassIsNominal) {
-
-                    text.append("Correctly Classified Instances     ");
-                    text.append(Utils.doubleToString(correct(), 12, 4) + "     "
-                            + Utils.doubleToString(pctCorrect(),
-                                    12, 4) + " %\n");
-                    text.append("Incorrectly Classified Instances   ");
-                    text.append(Utils.doubleToString(incorrect(), 12, 4) + "     "
-                            + Utils.doubleToString(pctIncorrect(),
-                                    12, 4) + " %\n");
-                    text.append("Kappa statistic                    ");
-                    text.append(Utils.doubleToString(kappa(), 12, 4) + "\n");
-
-                    if (m_CostMatrix != null) {
-                        text.append("Total Cost                         ");
-                        text.append(Utils.doubleToString(totalCost(), 12, 4) + "\n");
-                        text.append("Average Cost                       ");
-                        text.append(Utils.doubleToString(avgCost(), 12, 4) + "\n");
-                    }
-                    if (printComplexityStatistics) {
-                        text.append("K&B Relative Info Score            ");
-                        text.append(Utils.doubleToString(KBRelativeInformation(), 12, 4)
-                                + " %\n");
-                        text.append("K&B Information Score              ");
-                        text.append(Utils.doubleToString(KBInformation(), 12, 4)
-                                + " bits");
-                        text.append(Utils.doubleToString(KBMeanInformation(), 12, 4)
-                                + " bits/instance\n");
-                    }
-                } else {
-                    text.append("Correlation coefficient            ");
-                    text.append(Utils.doubleToString(correlationCoefficient(), 12, 4)
-                            + "\n");
-                }
-                if (printComplexityStatistics && m_ComplexityStatisticsAvailable) {
-                    text.append("Class complexity | order 0         ");
-                    text.append(Utils.doubleToString(SFPriorEntropy(), 12, 4)
-                            + " bits");
-                    text.append(Utils.doubleToString(SFMeanPriorEntropy(), 12, 4)
-                            + " bits/instance\n");
-                    text.append("Class complexity | scheme          ");
-                    text.append(Utils.doubleToString(SFSchemeEntropy(), 12, 4)
-                            + " bits");
-                    text.append(Utils.doubleToString(SFMeanSchemeEntropy(), 12, 4)
-                            + " bits/instance\n");
-                    text.append("Complexity improvement     (Sf)    ");
-                    text.append(Utils.doubleToString(SFEntropyGain(), 12, 4) + " bits");
-                    text.append(Utils.doubleToString(SFMeanEntropyGain(), 12, 4)
-                            + " bits/instance\n");
-                }
-
-                text.append("Mean absolute error                ");
-                text.append(Utils.doubleToString(meanAbsoluteError(), 12, 4)
-                        + "\n");
-                text.append("Root mean squared error            ");
-                text.append(Utils.
-                        doubleToString(rootMeanSquaredError(), 12, 4)
-                        + "\n");
-                if (!m_NoPriors) {
-                    text.append("Relative absolute error            ");
-                    text.append(Utils.doubleToString(relativeAbsoluteError(),
-                            12, 4) + " %\n");
-                    text.append("Root relative squared error        ");
-                    text.append(Utils.doubleToString(rootRelativeSquaredError(),
-                            12, 4) + " %\n");
-                }
-                if (m_CoverageStatisticsAvailable) {
-                    text.append("Coverage of cases (" + Utils.doubleToString(m_ConfLevel, 4, 2) + " level)     ");
-                    text.append(Utils.doubleToString(coverageOfTestCasesByPredictedRegions(),
-                            12, 4) + " %\n");
-                    if (!m_NoPriors) {
-                        text.append("Mean rel. region size (" + Utils.doubleToString(m_ConfLevel, 4, 2) + " level) ");
-                        text.append(Utils.doubleToString(sizeOfPredictedRegions(), 12, 4) + " %\n");
-                    }
-                }
-            }
-            if (Utils.gr(unclassified(), 0)) {
-                text.append("UnClassified Instances             ");
-                text.append(Utils.doubleToString(unclassified(), 12, 4) + "     "
-                        + Utils.doubleToString(pctUnclassified(),
-                                12, 4) + " %\n");
-            }
-            text.append("Total Number of Instances          ");
-            text.append(Utils.doubleToString(m_WithClass, 12, 4) + "\n");
-            if (m_MissingClass > 0) {
-                text.append("Ignored Class Unknown Instances            ");
-                text.append(Utils.doubleToString(m_MissingClass, 12, 4) + "\n");
-            }
-        } catch (Exception ex) {
-            // Should never occur since the class is known to be nominal
-            // here
-            System.err.println("Arggh - Must be a bug in Evaluation class");
-        }
+        text.append("Total Number of Instances          ");
+        text.append(withClass + "\n");
 
         return text.toString();
+    }
+
+    /**
+     * Outputs the performance statistics as a classification confusion matrix.
+     * For each class value, shows the distribution of predicted class values.
+     *
+     * @param title the title for the confusion matrix
+     * @return the confusion matrix as a String
+     * @throws Exception if the class is numeric
+     */
+    public String toMatrixString(String title) throws Exception {
+
+        StringBuffer text = new StringBuffer();
+        char[] IDChars = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
+            'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
+            'u', 'v', 'w', 'x', 'y', 'z'};
+        int IDWidth;
+        boolean fractional = false;
+
+        // Find the maximum value in the matrix
+        // and check for fractional display requirement
+        double maxval = 0;
+        for (int i = 0; i < this.nClass; i++) {
+            for (int j = 0; j < this.nClass; j++) {
+                double current = this.confusionMatrix[i][j];
+                if (current < 0) {
+                    current *= -10;
+                }
+                if (current > maxval) {
+                    maxval = current;
+                }
+                double fract = current - Math.rint(current);
+                if (!fractional && ((Math.log(fract) / Math.log(10)) >= -2)) {
+                    fractional = true;
+                }
+            }
+        }
+
+        IDWidth = 1 + Math.max((int) (Math.log(maxval) / Math.log(10)
+                + (fractional ? 3 : 0)),
+                (int) (Math.log(this.nClass)
+                / Math.log(IDChars.length)));
+        text.append(title).append("\n");
+        for (int i = 0; i < this.nClass; i++) {
+            if (fractional) {
+                text.append(" ").append(num2ShortID(i, IDChars, IDWidth - 3))
+                        .append("   ");
+            } else {
+                text.append(" ").append(num2ShortID(i, IDChars, IDWidth));
+            }
+        }
+        text.append("   <-- classified as\n");
+        for (int i = 0; i < this.nClass; i++) {
+            for (int j = 0; j < this.nClass; j++) {
+                text.append(" ").append(this.confusionMatrix[i][j]);
+            }
+            text.append(" | ").append(num2ShortID(i, IDChars, IDWidth))
+                    .append(" = ").append(classNames[i]).append("\n");
+        }
+        return text.toString();
+    }
+
+    /**
+     * Method for generating indices for the confusion matrix.
+     *
+     * @param num integer to format
+     * @param IDChars	the characters to use
+     * @param IDWidth	the width of the entry
+     * @return the formatted integer as a string
+     */
+    protected String num2ShortID(int num, char[] IDChars, int IDWidth) {
+
+        char ID[] = new char[IDWidth];
+        int i;
+
+        for (i = IDWidth - 1; i >= 0; i--) {
+            ID[i] = IDChars[num % IDChars.length];
+            num = num / IDChars.length - 1;
+            if (num < 0) {
+                break;
+            }
+        }
+        for (i--; i >= 0; i--) {
+            ID[i] = ' ';
+        }
+
+        return new String(ID);
     }
 
 }

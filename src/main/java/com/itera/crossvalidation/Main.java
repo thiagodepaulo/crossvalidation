@@ -5,7 +5,10 @@
  */
 package com.itera.crossvalidation;
 
+import Learning.Learning;
 import Structures.Data;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 
 /**
  *
@@ -13,7 +16,7 @@ import Structures.Data;
  */
 public class Main {
     
-    public static void main(String[] args) {
+    public static void main(String[] args) throws FileNotFoundException {
         
         Evaluator eval = new Evaluator();
         for(int i=0; i<IteraParams.RUNS; i++) {
@@ -26,10 +29,9 @@ public class Main {
            eval.evaluateClassifier(cls, test);
         }    
         
+        PrintWriter pw = new PrintWriter("out");
+        pw.print(eval.toSummaryString());
+        pw.close();
     }
-    
-    public static Learning buildClassifier(Data train) {
-        return null;
-    }
-    
+        
 }

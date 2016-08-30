@@ -5,6 +5,7 @@
  */
 package com.itera.crossvalidation;
 
+import Learning.Learning;
 import Structures.Data;
 import Structures.IndexValue;
 import java.util.ArrayList;
@@ -37,7 +38,8 @@ public class Evaluator {
         for (int docId = 0; docId < nDocs; docId++) {
             adjList = testData.getAdjListDoc(docId);
             int realClassDoc = testData.getClassDocument(docId);
-            int predClassDoc = model.classify(adjList);
+            double[] conf = model.classifyDocumentConficences(adjList);
+            int predClassDoc = argmax(conf);
             confusionMatrix[realClassDoc][predClassDoc] += 1;
 
             if (realClassDoc != predClassDoc) {
@@ -47,6 +49,18 @@ public class Evaluator {
             }
             withClass += 1;
         }
+    }
+
+    public static int argmax(double[] a) {
+        double max = a[0];
+        int idx_max = 0;
+        for (int i = 1; i < a.length; i++) {
+            if (a[i] > max) {
+                max = a[i];
+                idx_max = i;
+            }
+        }
+        return idx_max;
     }
 
     /**
@@ -461,7 +475,8 @@ public class Evaluator {
 
         text.append("Total Number of Instances          ");
         text.append(withClass + "\n");
-
+        text.append("\n\n");
+        text.append(toMatrixString("ConfusionMatrix"));
         return text.toString();
     }
 
@@ -471,9 +486,9 @@ public class Evaluator {
      *
      * @param title the title for the confusion matrix
      * @return the confusion matrix as a String
-     * @throws Exception if the class is numeric
+     * 
      */
-    public String toMatrixString(String title) throws Exception {
+    public String toMatrixString(String title) {
 
         StringBuffer text = new StringBuffer();
         char[] IDChars = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',

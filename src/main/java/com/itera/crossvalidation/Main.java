@@ -5,8 +5,11 @@
  */
 package com.itera.crossvalidation;
 
+import Configuration.PreProcessing_Configuration;
 import Learning.Learning;
+import SemiSupervisedLearning.TCHN_DocTerm;
 import Structures.Data;
+import SupervisedLearning.IMHN_DocTerm;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 
@@ -15,24 +18,30 @@ import java.io.PrintWriter;
  * @author root
  */
 public class Main {
-    
+
     public static void main(String[] args) throws FileNotFoundException {
-        
-        Evaluator eval = new Evaluator();
-        for(int i=0; i<IteraParams.RUNS; i++) {
-            Loader.loadDataFromCassandra("event_cc", "", "");
-           Data train = Loader.loadTrainFromCassandra(IteraParams.LANGUAGE, "");
-           Data test = Loader.loadTestFromCassandra(IteraParams.LANGUAGE, "");
-           
-           Learning cls = new Learning();
-           cls.buildClassifier(train);
-           
-           eval.evaluateClassifier(cls, test);
-        }    
-        
+
+        PreProcessing_Configuration configuration = new PreProcessing_Configuration(IteraParams.LANGUAGE, 2, true, false, true, true);
+
         PrintWriter pw = new PrintWriter("out");
-        pw.print(eval.toSummaryString());
+
+        for (int i = 0; i < IteraParams.RUNS; i++) {
+            Evaluator eval = new Evaluator();
+
+            Loader.loadDataFromCassandra("event_cc_pareto", new String[]{}, "");
+            Data train = Loader.loadTrainFromCassandra(IteraParams.LANGUAGE, "");
+            Data test = Loader.loadTestFromCassandra(IteraParams.LANGUAGE, "");
+
+            Learning cls = new TCHN_DocTerm(train, configuration, 0.05, 0.01, 10,100);
+            cls.buildClassifier(train);
+
+            eval.evaluateClassifier(cls, test);
+
+            pw.print(eval.toSummaryString());
+
+        }
+
         pw.close();
     }
-        
+
 }

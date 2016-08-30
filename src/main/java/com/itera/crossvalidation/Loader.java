@@ -40,6 +40,8 @@ public class Loader {
     
     public static void loadDataFromCassandra(String tableName, String[] columns, String whereClause){
         DataFrame dataFrame = IteraSpark.queryCassandra(tableName, columns, whereClause);
+        //dataFrame = dataFrame.filter(col("category").notEqual("INDEFINIDO"));
+        
         dataFrames = dataFrame.randomSplit(new double[]  { 0.8, 0.2 } );
     }
     

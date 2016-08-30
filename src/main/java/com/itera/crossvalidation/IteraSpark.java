@@ -36,6 +36,10 @@ public class IteraSpark implements Serializable {
     }
     
     public static DataFrame queryCassandra(String tableName, String[] columns, String whereClause) {
+        if (sqlContext == null){
+            configureContext("", "local", "teste", "192.168.21.253", "itera", "itera2101@", "itera");
+        }
+        
         String query = "";
 
         if (columns != null) {

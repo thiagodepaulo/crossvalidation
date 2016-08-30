@@ -59,4 +59,6 @@ public class Loader {
     public static void loadDataFromCassandra(){
         DataFrame[] dataFrames = dataFrame.randomSplit(new double[]  { 0.8, 0.2 } );
     }
+    
+    
 }

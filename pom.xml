@@ -17,7 +17,6 @@
             <artifactId>PreProcessingAPI</artifactId>
             <version>1.0.0</version>
         </dependency>
-<<<<<<< HEAD
         
         <dependency>
             <groupId>org.apache.spark</groupId>
@@ -35,12 +34,12 @@
             <groupId>com.datastax.spark</groupId>
             <artifactId>spark-cassandra-connector_2.10</artifactId>
             <version>1.6.0-M1</version>
-=======
+        </dependency>
+        
         <dependency>
             <groupId>com.itera</groupId>
             <artifactId>ParallelTextCategorizationToolAPI</artifactId>
             <version>1.0-SNAPSHOT</version>
->>>>>>> origin/master
         </dependency>
     </dependencies>
 </project>

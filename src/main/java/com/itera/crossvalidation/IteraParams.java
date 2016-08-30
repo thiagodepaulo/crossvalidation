@@ -12,5 +12,5 @@ package com.itera.crossvalidation;
 public class IteraParams {
     
     public static int RUNS = 10;
-    
+    public static String LANGUAGE = "portuguese";
 }

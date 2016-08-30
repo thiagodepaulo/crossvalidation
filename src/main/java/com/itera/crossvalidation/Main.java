@@ -20,8 +20,9 @@ public class Main {
         
         Evaluator eval = new Evaluator();
         for(int i=0; i<IteraParams.RUNS; i++) {
-           Data train = Loader.loadTrainFromCassandra();
-           Data test = Loader.loadTestFromCassandra();
+            Loader.loadDataFromCassandra("event_cc", "", "");
+           Data train = Loader.loadTrainFromCassandra(IteraParams.LANGUAGE, "");
+           Data test = Loader.loadTestFromCassandra(IteraParams.LANGUAGE, "");
            
            Learning cls = new Learning();
            cls.buildClassifier(train);

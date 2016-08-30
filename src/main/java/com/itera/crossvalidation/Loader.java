@@ -28,15 +28,25 @@ import scala.Tuple2;
 
 public class Loader {
 
-    static DataFrame dataFrame; 
+    static DataFrame[] dataFrames; 
     
-    public static void loadData(String tableName, String[] columns, String whereClause){
-        dataFrame = IteraSpark.queryCassandra(tableName, columns, whereClause);
-    }
     public static Data loadTrainFromCassandra(String language, String w2vDir) {
+        return loadData(dataFrames[0], language, w2vDir);
+    }
+
+    public static Data loadTestFromCassandra(String language, String w2vDir) {
+        return loadData(dataFrames[1], language, w2vDir);
+    }
+    
+    public static void loadDataFromCassandra(String tableName, String[] columns, String whereClause){
+        DataFrame dataFrame = IteraSpark.queryCassandra(tableName, columns, whereClause);
+        dataFrames = dataFrame.randomSplit(new double[]  { 0.8, 0.2 } );
+    }
+    
+    private static Data loadData(DataFrame df, String language, String w2vDir){
         PreProcessing_Configuration configuration = new PreProcessing_Configuration(language, 2, true, false, true, true);
 
-        List<InputPattern> conteudos = dataFrame.javaRDD().map(new Function<Row, InputPattern>() {
+        List<InputPattern> conteudos = df.javaRDD().map(new Function<Row, InputPattern>() {
             @Override
             public InputPattern call(Row row) throws Exception {
                 String id = row.getAs(row.fieldIndex("rsegda_lin_extrt"));
@@ -51,14 +61,4 @@ public class Loader {
 
         return data;
     }
-
-    public static Data loadTestFromCassandra() {
-        return null;
-    }
-    
-    public static void loadDataFromCassandra(){
-        DataFrame[] dataFrames = dataFrame.randomSplit(new double[]  { 0.8, 0.2 } );
-    }
-    
-    
 }
